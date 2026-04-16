@@ -143,18 +143,10 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
                 
                 <div className="space-y-3">
                   <button
-                    onClick={() => setShowScanner(true)}
+                    onClick={() => setShowManualInput(!showManualInput)}
                     className="w-full py-4 rounded-xl bg-pink-500 text-white font-bold text-lg hover:bg-pink-400 transition flex items-center justify-center gap-2"
                   >
-                    <Camera className="w-6 h-6" />
-                    Escanear QR con Cámara
-                  </button>
-
-                  <button
-                    onClick={() => setShowManualInput(!showManualInput)}
-                    className="w-full py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition flex items-center justify-center gap-2"
-                  >
-                    <Keyboard className="w-5 h-5" />
+                    <Keyboard className="w-6 h-6" />
                     Escribir ID del Boleto
                   </button>
 
