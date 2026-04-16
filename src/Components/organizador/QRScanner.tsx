@@ -15,8 +15,10 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const [error, setError] = useState('')
   const [lastScanned, setLastScanned] = useState<{raw: string, parsed: string | null} | null>(null)
   const [showDebug, setShowDebug] = useState(false)
+  const [scanDetected, setScanDetected] = useState(false)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const isProcessingRef = useRef(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -26,6 +28,8 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
         setError('')
         setScanning(true)
         setLastScanned(null)
+        setScanDetected(false)
+        isProcessingRef.current = false
 
         const scanner = new Html5Qrcode('qr-reader')
         scannerRef.current = scanner
@@ -33,12 +37,14 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
         await scanner.start(
           { facingMode: 'environment' },
           {
-            fps: 10,
+            fps: 5,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1,
           },
           (decodedText) => {
-            handleScan(decodedText)
+            if (!isProcessingRef.current) {
+              handleScan(decodedText)
+            }
           },
           () => {}
         )
@@ -111,18 +117,23 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
     return null
   }
 
-  const handleScan = (decodedText: string) => {
+  const handleScan = async (decodedText: string) => {
+    if (isProcessingRef.current) return
+    
+    isProcessingRef.current = true
+    setScanDetected(true)
+
     const parsed = parseTicketId(decodedText)
     setLastScanned({ raw: decodedText, parsed })
     setShowDebug(true)
 
+    await stopScanner()
+
     if (parsed) {
+      onScan(parsed)
       setTimeout(() => {
-        onScan(parsed)
-        setTimeout(() => {
-          onClose()
-        }, 1500)
-      }, 2000)
+        onClose()
+      }, 1000)
     }
   }
 

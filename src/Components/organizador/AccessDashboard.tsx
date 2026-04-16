@@ -57,13 +57,13 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
     if (!manualId.trim()) return
 
     const ticketId = manualId.trim().toUpperCase()
-    window.open(`/verify/${ticketId}`, '_blank')
+    window.location.href = `/verify/${ticketId}`
     setManualId('')
     setShowManualInput(false)
   }
 
   const handleQRScan = (ticketId: string) => {
-    window.open(`/verify/${ticketId}`, '_blank')
+    window.location.href = `/verify/${ticketId}`
   }
 
   const formatDate = (dateString: string) => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { Loader2, ShieldCheck, ShieldAlert, Ticket as TicketIcon, User, Calendar, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react'
 
 const SUCCESS_SOUND = 'data:audio/wav;base64,UklGRl9vAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vAAA='
@@ -9,7 +9,6 @@ const ERROR_SOUND = 'data:audio/wav;base64,UklGRl9vAABXQVZFZm10IBAAAAABAAEAQB8AA
 
 export default function VerifyTicketPage() {
   const params = useParams()
-  const router = useRouter()
   const ticketId = params.id as string
 
   const [loading, setLoading] = useState(true)
@@ -112,7 +111,7 @@ export default function VerifyTicketPage() {
   }
 
   const handleBack = () => {
-    router.back()
+    window.history.back()
   }
 
   const getTipoBadgeColor = (tipo: string) => {
