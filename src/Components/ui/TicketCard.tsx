@@ -8,6 +8,7 @@ interface TicketCardProps {
   ticketData: {
     id: string;
     qrCodeString: string;
+    qrRaw?: string;
     eventName: string;
     date: string;
     location: string;
@@ -23,17 +24,19 @@ export function TicketCard({ ticketData }: TicketCardProps) {
 
   useEffect(() => {
     if (ticketData.qrCodeString) {
-      QRCode.toDataURL(ticketData.qrCodeString, {
+      const qrContent = ticketData.id
+      QRCode.toDataURL(qrContent, {
         color: {
           dark: '#000000',
           light: '#ffffff',
         },
         width: 150,
+        errorCorrectionLevel: 'M',
       })
         .then(url => setQrSrc(url))
-        .catch(err => console.error(err));
+        .catch(err => console.error('QR Error:', err));
     }
-  }, [ticketData.qrCodeString]);
+  }, [ticketData.qrCodeString, ticketData.id]);
 
   const handleDownload = async () => {
     // Genera un canvas con los datos del boleto y lo descarga como PNG

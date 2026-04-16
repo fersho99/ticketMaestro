@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
-import { X, Camera, Loader2, CheckCircle, XCircle } from 'lucide-react'
+import { X, Camera, Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
 interface QRScannerProps {
   isOpen: boolean
@@ -13,7 +13,8 @@ interface QRScannerProps {
 export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
-  const [lastScanned, setLastScanned] = useState<string | null>(null)
+  const [lastScanned, setLastScanned] = useState<{raw: string, parsed: string | null} | null>(null)
+  const [showDebug, setShowDebug] = useState(false)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -24,6 +25,7 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
       try {
         setError('')
         setScanning(true)
+        setLastScanned(null)
 
         const scanner = new Html5Qrcode('qr-reader')
         scannerRef.current = scanner
@@ -72,27 +74,55 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
     setScanning(false)
   }
 
-  const handleScan = (decodedText: string) => {
-    setLastScanned(decodedText)
+  const parseTicketId = (rawText: string): string | null => {
+    const cleanText = rawText.trim()
 
     try {
-      const decoded = JSON.parse(atob(decodedText))
-      if (decoded.ticketId) {
-        setLastScanned(decoded.ticketId)
-        onScan(decoded.ticketId)
+      const decoded = atob(cleanText)
+      const parsed = JSON.parse(decoded)
+      if (parsed.ticketId) {
+        return parsed.ticketId
+      }
+    } catch {}
+
+    const urlMatch = cleanText.match(/verify\/([A-Z0-9-]+)/i)
+    if (urlMatch) {
+      return urlMatch[1].toUpperCase()
+    }
+
+    const bolMatch = cleanText.match(/\b(BOL-[A-Z0-9]+)\b/i)
+    if (bolMatch) {
+      return bolMatch[1].toUpperCase()
+    }
+
+    const ticketMatch = cleanText.match(/\b([A-Z]{3}-[A-Z0-9]+)\b/i)
+    if (ticketMatch) {
+      return ticketMatch[1].toUpperCase()
+    }
+
+    if (/^[A-Z0-9]{8,15}$/i.test(cleanText)) {
+      return cleanText.toUpperCase()
+    }
+
+    if (/^\d{6,20}$/.test(cleanText)) {
+      return cleanText
+    }
+
+    return null
+  }
+
+  const handleScan = (decodedText: string) => {
+    const parsed = parseTicketId(decodedText)
+    setLastScanned({ raw: decodedText, parsed })
+    setShowDebug(true)
+
+    if (parsed) {
+      setTimeout(() => {
+        onScan(parsed)
         setTimeout(() => {
           onClose()
         }, 1500)
-      }
-    } catch {
-      const ticketIdMatch = decodedText.match(/BOL-[A-Z0-9]+/i)
-      if (ticketIdMatch) {
-        setLastScanned(ticketIdMatch[0])
-        onScan(ticketIdMatch[0])
-        setTimeout(() => {
-          onClose()
-        }, 1500)
-      }
+      }, 2000)
     }
   }
 
@@ -154,15 +184,41 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           )}
 
           {lastScanned && (
-            <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 shrink-0" />
-                <div>
-                  <p className="font-bold">¡Código detectado!</p>
-                  <p className="text-green-400/80 font-mono">{lastScanned}</p>
-                  <p className="text-xs mt-1">Abriendo validación...</p>
+            <div className="mt-4 space-y-3">
+              {lastScanned.parsed ? (
+                <div className="p-4 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 shrink-0" />
+                    <p className="font-bold">¡Boleto detectado!</p>
+                  </div>
+                  <p className="text-2xl font-mono font-bold text-center mt-2">{lastScanned.parsed}</p>
+                  <p className="text-xs text-center mt-2 text-green-400/60">Abriendo validación...</p>
                 </div>
-              </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <p className="font-bold">Código detectado pero no reconocido</p>
+                  </div>
+                  <p className="text-xs mt-2 opacity-60">Este código no parece ser un boleto válido</p>
+                </div>
+              )}
+
+              {showDebug && (
+                <details className="bg-black/30 rounded-lg p-3">
+                  <summary className="text-xs text-gray-400 cursor-pointer">Ver datos crudos</summary>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">Raw ({lastScanned.raw.length} chars):</p>
+                    <code className="block text-xs text-pink-400 break-all bg-black/50 p-2 rounded">
+                      {lastScanned.raw.substring(0, 200)}{lastScanned.raw.length > 200 ? '...' : ''}
+                    </code>
+                    <p className="text-xs text-gray-500 mt-2">Parsed:</p>
+                    <code className="block text-xs text-green-400 bg-black/50 p-2 rounded">
+                      {lastScanned.parsed || 'No se pudo parsear'}
+                    </code>
+                  </div>
+                </details>
+              )}
             </div>
           )}
         </div>

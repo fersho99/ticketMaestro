@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Navbar from '@/Components/layout/Navbar';
 import { TicketCard } from '@/Components/ui/TicketCard';
-import { Ticket } from 'lucide-react';
+import { Ticket, Eye } from 'lucide-react';
 import type { Usuario } from '@/types';
 
 export default async function MisBoletosPage() {
@@ -67,7 +67,8 @@ export default async function MisBoletosPage() {
 
         ticketsReales.push({
           id: boleto.id,
-          qrCodeString: boleto.codigo_qr || `https://ticket-maestro.com/verify/${boleto.id}`, // Fallback al id temporal
+          qrCodeString: boleto.codigo_qr || `https://ticket-maestro.com/verify/${boleto.id}`,
+          qrRaw: boleto.codigo_qr,
           eventName: boleto.evento ? boleto.evento.titulo : 'Evento Desconocido',
           date: formatter.format(fechaEventoRaw),
           location: boleto.evento ? boleto.evento.ubicacion : 'Por definir',
@@ -99,11 +100,19 @@ export default async function MisBoletosPage() {
             <a href="/" className="inline-block bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-full transition">Explorar Eventos</a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {ticketsReales.map((ticket, index) => (
-              <TicketCard key={ticket.id + index.toString()} ticketData={ticket} />
-            ))}
-          </div>
+          <>
+            <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+              <p className="text-blue-400 text-sm flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Los códigos QR contienen información segura. Si tienes problemas al escanear, contacta al soporte.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {ticketsReales.map((ticket, index) => (
+                <TicketCard key={ticket.id + index.toString()} ticketData={ticket} />
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

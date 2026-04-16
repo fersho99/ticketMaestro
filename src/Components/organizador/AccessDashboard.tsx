@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Ticket, Users, TrendingUp, Clock, Camera, Keyboard, Loader2 } from 'lucide-react'
+import { Ticket, Users, TrendingUp, Clock, Keyboard, Loader2 } from 'lucide-react'
 import type { EventoStats } from '@/types'
 import RecentEntries from './RecentEntries'
-import QRScanner from './QRScanner'
 
 interface AccessDashboardProps {
   eventoId: string
@@ -23,7 +22,6 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
   const [error, setError] = useState('')
   const [lastUpdate, setLastUpdate] = useState<string>('')
   const [showManualInput, setShowManualInput] = useState(false)
-  const [showScanner, setShowScanner] = useState(false)
   const [manualId, setManualId] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -85,12 +83,6 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
 
   return (
     <div className="space-y-6">
-      <QRScanner
-        isOpen={showScanner}
-        onClose={() => setShowScanner(false)}
-        onScan={handleQRScan}
-      />
-
       <div className="text-center mb-8">
         <h1 className="text-3xl font-black mb-2">{evento.titulo}</h1>
         <div className="flex items-center justify-center gap-4 text-gray-400">
