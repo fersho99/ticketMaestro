@@ -49,7 +49,19 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
   useEffect(() => {
     fetchStats()
     const interval = setInterval(fetchStats, REFRESH_INTERVAL)
-    return () => clearInterval(interval)
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchStats()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [fetchStats])
 
   const handleManualSubmit = (e: React.FormEvent) => {
