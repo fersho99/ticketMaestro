@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Ticket, Users, TrendingUp, Clock, Keyboard, Loader2 } from 'lucide-react'
+import { Ticket, Users, TrendingUp, Clock, Keyboard, Loader2, Camera } from 'lucide-react'
 import type { EventoStats } from '@/types'
 import RecentEntries from './RecentEntries'
+import QRScanner from './QRScanner'
 
 interface AccessDashboardProps {
   eventoId: string
@@ -22,6 +23,7 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
   const [error, setError] = useState('')
   const [lastUpdate, setLastUpdate] = useState<string>('')
   const [showManualInput, setShowManualInput] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
   const [manualId, setManualId] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -83,6 +85,12 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
 
   return (
     <div className="space-y-6">
+      <QRScanner
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleQRScan}
+      />
+
       <div className="text-center mb-8">
         <h1 className="text-3xl font-black mb-2">{evento.titulo}</h1>
         <div className="flex items-center justify-center gap-4 text-gray-400">
@@ -143,10 +151,18 @@ export default function AccessDashboard({ eventoId, evento }: AccessDashboardPro
                 
                 <div className="space-y-3">
                   <button
-                    onClick={() => setShowManualInput(!showManualInput)}
+                    onClick={() => setShowScanner(true)}
                     className="w-full py-4 rounded-xl bg-pink-500 text-white font-bold text-lg hover:bg-pink-400 transition flex items-center justify-center gap-2"
                   >
-                    <Keyboard className="w-6 h-6" />
+                    <Camera className="w-6 h-6" />
+                    Escanear QR con Cámara
+                  </button>
+
+                  <button
+                    onClick={() => setShowManualInput(!showManualInput)}
+                    className="w-full py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition flex items-center justify-center gap-2"
+                  >
+                    <Keyboard className="w-5 h-5" />
                     Escribir ID del Boleto
                   </button>
 
