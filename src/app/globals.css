@@ -24,3 +24,32 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* html5-qrcode scanner styles */
+#qr-reader {
+  border: none !important;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#qr-reader video {
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+#qr-reader__scan_region {
+  background: transparent !important;
+}
+
+#qr-reader__dashboard {
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_swaplink {
+  display: none !important;
+}
+
+.qr-shaded-region {
+  background: transparent !important;
+  border: none !important;
+}
